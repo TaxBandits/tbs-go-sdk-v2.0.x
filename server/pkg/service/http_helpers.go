@@ -7,8 +7,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
 )

@@ -1,9 +1,9 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/handler"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 func New(

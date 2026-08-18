@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/draftpdf"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/utils"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
+	"github.com/gin-gonic/gin"
 )
 
 type Form1099UtilityHandler interface {
