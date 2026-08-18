@@ -25,6 +25,7 @@ tbs-go-sdk-2.0.x/
 │   ├── .env.example             # Client env template
 │   └── package.json
 ├── server/                      # Go + Gin backend
+│   ├── pkg/          # importable SDK surface (config, dtos, service)
 │   ├── internal/
 │   │   ├── config/              # Env-driven configuration loader
 │   │   ├── dtos/                # Request/response/query models
