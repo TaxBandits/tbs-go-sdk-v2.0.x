@@ -12,6 +12,7 @@ import (
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/handler"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/router"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/draftpdf"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
 )
 
@@ -26,7 +27,7 @@ func main() {
 	form1099UtilityService := service.NewForm1099UtilityService(authService, httpClient, cfg.PublicAPI)
 	form1099NecService := service.NewForm1099NecService(authService, httpClient, cfg.PublicAPI)
 	form1099MiscService := service.NewForm1099MiscService(authService, httpClient, cfg.PublicAPI)
-	draftPdfService := service.NewDraftPdfService(cfg.S3)
+	draftPdfService := draftpdf.NewDraftPdfService(cfg.S3)
 
 	authHandler := handler.NewAuthHandler(authService)
 	businessHandler := handler.NewBusinessHandler(businessService)

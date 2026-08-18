@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/draftpdf"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/utils"
 )
@@ -23,10 +24,10 @@ type Form1099UtilityHandler interface {
 
 type form1099UtilityHandler struct {
 	service         service.Form1099UtilityService
-	draftPdfService service.DraftPdfService
+	draftPdfService draftpdf.DraftPdfService
 }
 
-func NewForm1099UtilityHandler(service service.Form1099UtilityService, draftPdfService service.DraftPdfService) Form1099UtilityHandler {
+func NewForm1099UtilityHandler(service service.Form1099UtilityService, draftPdfService draftpdf.DraftPdfService) Form1099UtilityHandler {
 	return &form1099UtilityHandler{service: service, draftPdfService: draftPdfService}
 }
 
