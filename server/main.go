@@ -9,10 +9,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/config"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/handler"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/router"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/service"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
 )
 
 func main() {

@@ -4,9 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/dtos"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/service"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/utils"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
 )
 
 type AuthHandler interface {
@@ -24,13 +23,13 @@ func NewAuthHandler(service service.AuthService) AuthHandler {
 func (h *authHandler) GetJWTToken(c *gin.Context) {
 	var request dtos.AuthTokenRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "scope and forms are required")
+		WriteValidationError(c, "scope and forms are required")
 		return
 	}
 
 	token, err := h.service.GetJWT(c.Request.Context(), request.Scope, request.Forms, false)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 

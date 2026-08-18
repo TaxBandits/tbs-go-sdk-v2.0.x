@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
 )
 
 func decodeResponseBody(body io.Reader) (any, error) {

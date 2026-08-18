@@ -1,11 +1,11 @@
-package utils
+package handler
 
 import (
 	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	model "github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/dtos"
+	model "github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
 )
 
 func WriteValidationError(c *gin.Context, message string) {

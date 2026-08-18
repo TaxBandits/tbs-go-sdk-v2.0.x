@@ -10,8 +10,8 @@ import (
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/config"
-	model "github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
+	model "github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
 )
 
 type AuthService interface {

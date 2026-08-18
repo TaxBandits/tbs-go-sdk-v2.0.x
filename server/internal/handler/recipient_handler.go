@@ -2,8 +2,8 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/dtos"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/service"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/utils"
 )
 
@@ -45,11 +45,11 @@ func (h *recipientHandler) List(c *gin.Context) {
 
 	response, err := h.service.List(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) Get(c *gin.Context) {
@@ -60,43 +60,43 @@ func (h *recipientHandler) Get(c *gin.Context) {
 
 	response, err := h.service.Get(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) Create(c *gin.Context) {
 	var request dtos.RecipientsRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.Create(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) Update(c *gin.Context) {
 	var request dtos.RecipientsRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.Update(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) Remove(c *gin.Context) {
@@ -107,11 +107,11 @@ func (h *recipientHandler) Remove(c *gin.Context) {
 
 	response, err := h.service.Remove(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) Reactivate(c *gin.Context) {
@@ -122,11 +122,11 @@ func (h *recipientHandler) Reactivate(c *gin.Context) {
 
 	response, err := h.service.Reactivate(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) Deactivate(c *gin.Context) {
@@ -137,75 +137,75 @@ func (h *recipientHandler) Deactivate(c *gin.Context) {
 
 	response, err := h.service.Deactivate(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) AssignRecipients(c *gin.Context) {
 	var request dtos.AssignRecipientsRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.AssignRecipients(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) UnassignRecipients(c *gin.Context) {
 	var request dtos.UnAssignRecipientsRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.UnassignRecipients(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) AddDBA(c *gin.Context) {
 	var request dtos.RecipientAddDBARequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.AddDBA(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) UpdateDBA(c *gin.Context) {
 	var request dtos.RecipientAddDBARequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.UpdateDBA(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) ListDBA(c *gin.Context) {
@@ -219,11 +219,11 @@ func (h *recipientHandler) ListDBA(c *gin.Context) {
 
 	response, err := h.service.ListDBA(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *recipientHandler) DeleteDBA(c *gin.Context) {
@@ -238,9 +238,9 @@ func (h *recipientHandler) DeleteDBA(c *gin.Context) {
 
 	response, err := h.service.DeleteDBA(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }

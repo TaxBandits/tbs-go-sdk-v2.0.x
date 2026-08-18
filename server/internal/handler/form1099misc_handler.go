@@ -2,8 +2,8 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/dtos"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/service"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/utils"
 )
 
@@ -25,33 +25,33 @@ func NewForm1099MiscHandler(service service.Form1099MiscService) Form1099MiscHan
 func (h *form1099MiscHandler) Create(c *gin.Context) {
 	var request dtos.Form1099MiscCreateRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.Create(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099MiscHandler) Update(c *gin.Context) {
 	var request dtos.Form1099MiscCreateRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.Update(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099MiscHandler) Get(c *gin.Context) {
@@ -62,25 +62,25 @@ func (h *form1099MiscHandler) Get(c *gin.Context) {
 
 	response, err := h.service.Get(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099MiscHandler) ValidateForm(c *gin.Context) {
 	var request dtos.Form1099MiscCreateRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.ValidateForm(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }

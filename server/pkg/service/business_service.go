@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/config"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/utils"
 )
 

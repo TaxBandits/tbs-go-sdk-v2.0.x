@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/dtos"
-	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/service"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/utils"
 )
 
@@ -33,17 +33,17 @@ func NewForm1099UtilityHandler(service service.Form1099UtilityService, draftPdfS
 func (h *form1099UtilityHandler) List(c *gin.Context) {
 	var request dtos.List1099UtilityRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.List(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) Status(c *gin.Context) {
@@ -55,11 +55,11 @@ func (h *form1099UtilityHandler) Status(c *gin.Context) {
 
 	response, err := h.service.Status(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) RequestDraftPdfUrl(c *gin.Context) {
@@ -70,11 +70,11 @@ func (h *form1099UtilityHandler) RequestDraftPdfUrl(c *gin.Context) {
 
 	response, err := h.service.RequestDraftPdfUrl(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) DraftPdfFile(c *gin.Context) {
@@ -109,11 +109,11 @@ func (h *form1099UtilityHandler) RequestPdfUrls(c *gin.Context) {
 
 	response, err := h.service.RequestPdfUrls(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) Delete(c *gin.Context) {
@@ -125,27 +125,27 @@ func (h *form1099UtilityHandler) Delete(c *gin.Context) {
 
 	response, err := h.service.Delete(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) Transmit(c *gin.Context) {
 	var request dtos.TransmitRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.Transmit(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) StatusLog(c *gin.Context) {
@@ -156,9 +156,9 @@ func (h *form1099UtilityHandler) StatusLog(c *gin.Context) {
 
 	response, err := h.service.StatusLog(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
