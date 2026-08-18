@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --color-tax-orange: #F58220;
+  --color-tax-orange-light: #FFF7ED;
+  --color-tax-orange-dark: #C2410C;
+  --color-tax-deep-blue: #0A1F44;
+  --color-tax-light-bg: #FFFFFF;
+  
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-slate-900 font-sans;
+  }
+
+  /* Global Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.slate.200') transparent;
+  }
+}
+
+@layer components {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-tax-orange/20 rounded-full hover:bg-tax-orange/40 transition-colors;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
