@@ -25,6 +25,9 @@ type form1099MiscService struct {
 }
 
 func NewForm1099MiscService(authService AuthService, client *http.Client, cfg config.APIConfig) Form1099MiscService {
+	if client == nil {
+		client = &http.Client{Timeout: defaultHTTPTimeout}
+	}
 	return &form1099MiscService{
 		authService: authService,
 		client:      client,

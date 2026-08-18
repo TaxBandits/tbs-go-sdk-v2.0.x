@@ -25,6 +25,9 @@ type form1099NecService struct {
 }
 
 func NewForm1099NecService(authService AuthService, client *http.Client, cfg config.APIConfig) Form1099NecService {
+	if client == nil {
+		client = &http.Client{Timeout: defaultHTTPTimeout}
+	}
 	return &form1099NecService{
 		authService: authService,
 		client:      client,

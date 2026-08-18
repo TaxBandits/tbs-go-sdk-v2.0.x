@@ -33,6 +33,9 @@ type businessService struct {
 }
 
 func NewBusinessService(authService AuthService, client *http.Client, cfg config.APIConfig) BusinessService {
+	if client == nil {
+		client = &http.Client{Timeout: defaultHTTPTimeout}
+	}
 	return &businessService{
 		authService: authService,
 		client:      client,

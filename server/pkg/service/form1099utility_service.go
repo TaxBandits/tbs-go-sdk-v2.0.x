@@ -28,6 +28,9 @@ type form1099UtilityService struct {
 }
 
 func NewForm1099UtilityService(authService AuthService, client *http.Client, cfg config.APIConfig) Form1099UtilityService {
+	if client == nil {
+		client = &http.Client{Timeout: defaultHTTPTimeout}
+	}
 	return &form1099UtilityService{
 		authService: authService,
 		client:      client,

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 	"strings"
 
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
@@ -29,6 +30,10 @@ func decodeResponseBody(body io.Reader) (any, error) {
 
 	return payload, nil
 }
+
+// defaultHTTPTimeout applies when a caller passes a nil *http.Client. An unset timeout
+// waits on a stalled connection indefinitely; 30s matches what main.go already uses.
+const defaultHTTPTimeout = 30 * time.Second
 
 // callAPIWithRetry is a shared proxy helper used by newer services
 // (Form1099Utility/Form1099NEC/Form1099MISC) so the request/retry-on-401/response

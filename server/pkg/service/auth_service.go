@@ -35,6 +35,9 @@ type authService struct {
 }
 
 func NewAuthService(client *http.Client, cfg config.OAuthConfig) AuthService {
+	if client == nil {
+		client = &http.Client{Timeout: defaultHTTPTimeout}
+	}
 	return &authService{
 		client:     client,
 		cfg:        cfg,

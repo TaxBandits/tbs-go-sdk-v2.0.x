@@ -34,6 +34,9 @@ type recipientService struct {
 }
 
 func NewRecipientService(authService AuthService, client *http.Client, cfg config.APIConfig) RecipientService {
+	if client == nil {
+		client = &http.Client{Timeout: defaultHTTPTimeout}
+	}
 	return &recipientService{
 		authService: authService,
 		client:      client,
