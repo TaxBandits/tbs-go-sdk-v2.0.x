@@ -7,8 +7,43 @@ This SDK provides:
 - **Go Backend Server** — Gin-based API wrapper that handles OAuth 2.0 authentication, request routing, and AWS S3 draft PDF proxying
 - **React Frontend Client** — TypeScript + Vite dashboard with pre-built components for Business, Recipient, and Form management
 - **Pre-built Modules** — Business (Payer), Recipient, Form 1099-NEC, Form 1099-MISC, and cross-form utility endpoints
+- **Importable Go packages** — `server/pkg/` can be used as a dependency on its own, without running the sample server ([below](#use-it-as-a-go-module))
 
 > 🔗 **Full API Reference**: [TaxBandits Developer Docs 2.0.0](https://developer.taxbandits.com/docs/2.0.0/Business/Overview)
+
+---
+
+## Use it as a Go module
+
+The packages under `server/pkg/` are importable, so you can call the TaxBandits API from your own Go
+code without running the sample server. Gin and the AWS SDK are used only by the server and live
+under `internal/`, so neither ends up in your dependency graph.
+
+```bash
+go get github.com/TaxBandits/tbs-go-sdk-v2.0.x/server
+```
+
+```go
+auth := service.NewAuthService(httpClient, config.OAuthConfig{
+	URL:          "https://testoauth.expressauth.net/v2",
+	TokenPath:    "/token",
+	ClientID:     clientID,
+	ClientSecret: clientSecret,
+	UserToken:    userToken,
+	DefaultScope: "Read_Write",
+	DefaultForms: []string{"All"},
+})
+
+misc := service.NewForm1099MiscService(auth, httpClient, config.APIConfig{
+	URL: "https://testapi.taxbandits.com/v2.0.0",
+})
+
+result, err := misc.ValidateForm(ctx, dtos.Form1099MiscCreateRequest{})
+```
+
+One `AuthService` is shared across the form services — it signs the JWS, exchanges it for a JWT and
+caches the token. See [server/README.md](./server/README.md#use-it-as-a-go-module) for the full
+example and for which upstream statuses come back as a result rather than an error.
 
 ---
 
@@ -25,14 +60,16 @@ tbs-go-sdk-2.0.x/
 │   ├── .env.example             # Client env template
 │   └── package.json
 ├── server/                      # Go + Gin backend
-│   ├── pkg/          # importable SDK surface (config, dtos, service)
-│   ├── internal/
+│   ├── pkg/                     # Importable: use these as a dependency
 │   │   ├── config/              # Env-driven configuration loader
 │   │   ├── dtos/                # Request/response/query models
+│   │   └── service/             # OAuth + the TaxBandits API calls
+│   ├── internal/                # The sample server's own wiring
+│   │   ├── draftpdf/            # AWS S3 draft-PDF proxy (SSE-C)
 │   │   ├── handler/             # Gin request handlers
 │   │   ├── middleware/          # CORS, logging, panic recovery
 │   │   ├── router/              # Route registration
-│   │   └── service/             # OAuth, proxy, and S3 business logic
+│   │   └── utils/               # Endpoint paths, payload mapping
 │   ├── main.go                  # Entrypoint: wires config → services → router
 │   ├── .env                     # Your local secrets (gitignored)
 │   └── go.mod
