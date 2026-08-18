@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"tbs-sdk-go-v2.0.x-server/internal/dtos"
-	"tbs-sdk-go-v2.0.x-server/internal/service"
-	"tbs-sdk-go-v2.0.x-server/internal/utils"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/service"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/utils"
 )
 
 type Form1099UtilityHandler interface {

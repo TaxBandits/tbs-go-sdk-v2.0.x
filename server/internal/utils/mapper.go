@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 
-	model "tbs-sdk-go-v2.0.x-server/internal/dtos"
+	model "github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/dtos"
 )
 
 func MapBusinessRequest(request model.BusinessesRequest) map[string]any {

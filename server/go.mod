@@ -1,4 +1,4 @@
-module tbs-sdk-go-v2.0.x-server
+module github.com/TaxBandits/tbs-go-sdk-v2.0.x/server
 
 go 1.26.1
 

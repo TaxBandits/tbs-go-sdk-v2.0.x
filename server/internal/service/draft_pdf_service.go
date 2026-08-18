@@ -11,7 +11,7 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"tbs-sdk-go-v2.0.x-server/internal/config"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/config"
 )
 
 // DraftPdfFile is the result of fetching a draft PDF (or other file) directly
