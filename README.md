@@ -24,6 +24,12 @@ go get github.com/TaxBandits/tbs-go-sdk-v2.0.x/server
 ```
 
 ```go
+import (
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
+)
+
 auth := service.NewAuthService(httpClient, config.OAuthConfig{
 	URL:          "https://testoauth.expressauth.net/v2",
 	TokenPath:    "/token",
@@ -44,6 +50,24 @@ result, err := misc.ValidateForm(ctx, dtos.Form1099MiscCreateRequest{})
 One `AuthService` is shared across the form services — it signs the JWS, exchanges it for a JWT and
 caches the token. See [server/README.md](./server/README.md#use-it-as-a-go-module) for the full
 example and for which upstream statuses come back as a result rather than an error.
+
+### Versioning
+
+There are no release tags yet, so `go get` resolves to a pseudo-version pinned to a commit
+(`v0.0.0-20260818143154-5c13e3252a00`). That works, but it can't be pinned to a meaningful
+version. Tagging a release would fix that — note the module lives in `server/`, so the tag has to
+carry that prefix:
+
+```bash
+git tag server/v0.1.0
+git push origin server/v0.1.0
+```
+
+Consumers then pin it the usual way:
+
+```bash
+go get github.com/TaxBandits/tbs-go-sdk-v2.0.x/server@v0.1.0
+```
 
 ---
 
