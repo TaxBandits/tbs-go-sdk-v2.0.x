@@ -7,6 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Logger returns middleware that logs the method, path, query, status
+// code, latency, and client IP of each request after it completes.
 func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		startedAt := time.Now()

@@ -1,4 +1,5 @@
-package service
+// Package httphelper provides the reusable HTTP transport used by SDK services.
+package httphelper
 
 import (
 	"bytes"
@@ -8,11 +9,13 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
-	"tbs-sdk-go-v2.0.x-server/internal/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
 )
 
-func decodeResponseBody(body io.Reader) (any, error) {
+// DecodeResponseBody reads an upstream response body, decoding JSON when possible.
+func DecodeResponseBody(body io.Reader) (any, error) {
 	data, err := io.ReadAll(body)
 	if err != nil {
 		return nil, err
@@ -30,15 +33,21 @@ func decodeResponseBody(body io.Reader) (any, error) {
 	return payload, nil
 }
 
-// callAPIWithRetry is a shared proxy helper used by newer services
-// (Form1099Utility/Form1099NEC/Form1099MISC) so the request/retry-on-401/response
-// classification logic isn't duplicated in every new service file. It mirrors
-// the callAPI method already implemented individually on businessService and
-// recipientService.
-func callAPIWithRetry(
+// DefaultTimeout is used when an SDK constructor receives a nil HTTP client.
+const DefaultTimeout = 30 * time.Second
+
+// DefaultClient returns a client with the SDK's bounded default timeout.
+func DefaultClient() *http.Client {
+	return &http.Client{Timeout: DefaultTimeout}
+}
+
+// CallWithRetry sends an authenticated JSON request, refreshing the token and
+// retrying once if the upstream API returns 401. It decodes JSON responses and
+// classifies critical upstream errors consistently for all SDK services.
+func CallWithRetry(
 	ctx context.Context,
 	client *http.Client,
-	authService AuthService,
+	refreshToken func(context.Context) (string, error),
 	baseURL, method, endpoint, token string,
 	query url.Values,
 	payload any,
@@ -89,7 +98,7 @@ func callAPIWithRetry(
 	if response.StatusCode == http.StatusUnauthorized {
 		response.Body.Close()
 
-		newToken, err := authService.GetJWT(ctx, "", nil, true)
+		newToken, err := refreshToken(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +111,7 @@ func callAPIWithRetry(
 
 	defer response.Body.Close()
 
-	responsePayload, err := decodeResponseBody(response.Body)
+	responsePayload, err := DecodeResponseBody(response.Body)
 	if err != nil {
 		return nil, err
 	}

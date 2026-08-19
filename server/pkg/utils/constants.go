@@ -1,5 +1,7 @@
 package utils
 
+// Upstream endpoint paths on the TaxBandits public API, appended to the
+// configured PublicAPI base URL by each service.
 const (
 	BusinessCreateEndpoint     = "/business/create"
 	BusinessGetEndpoint        = "/business/get"

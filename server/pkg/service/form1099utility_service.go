@@ -6,11 +6,15 @@ import (
 	"net/url"
 	"strings"
 
-	"tbs-sdk-go-v2.0.x-server/internal/config"
-	"tbs-sdk-go-v2.0.x-server/internal/dtos"
-	"tbs-sdk-go-v2.0.x-server/internal/utils"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/helper/http"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/utils"
 )
 
+// Form1099UtilityService proxies cross-form operations (list, status,
+// draft/post-transmission PDF URLs, delete, transmit, status log) to the
+// TaxBandits public API — shared by 1099 and W-2 forms alike.
 type Form1099UtilityService interface {
 	List(ctx context.Context, request dtos.List1099UtilityRequest) (*dtos.ProxyResult, error)
 	Status(ctx context.Context, query dtos.Form1099UtilityStatusQuery) (*dtos.ProxyResult, error)
@@ -27,7 +31,13 @@ type form1099UtilityService struct {
 	baseURL     string
 }
 
+// NewForm1099UtilityService builds a Form1099UtilityService that
+// authenticates via authService and calls the TaxBandits API described by
+// cfg. A nil client defaults to a 30-second-timeout *http.Client.
 func NewForm1099UtilityService(authService AuthService, client *http.Client, cfg config.APIConfig) Form1099UtilityService {
+	if client == nil {
+		client = httphelper.DefaultClient()
+	}
 	return &form1099UtilityService{
 		authService: authService,
 		client:      client,
@@ -100,5 +110,7 @@ func (s *form1099UtilityService) callAPI(ctx context.Context, method, endpoint,
 	query url.Values,
 	payload any,
 ) (*dtos.UpstreamResponse, error) {
-	return callAPIWithRetry(ctx, s.client, s.authService, s.baseURL, method, endpoint, token, query, payload)
+	return httphelper.CallWithRetry(ctx, s.client, func(ctx context.Context) (string, error) {
+		return s.authService.GetJWT(ctx, "", nil, true)
+	}, s.baseURL, method, endpoint, token, query, payload)
 }

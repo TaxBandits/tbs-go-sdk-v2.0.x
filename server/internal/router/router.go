@@ -1,11 +1,17 @@
+// Package router wires the Gin engine, registering middleware and every
+// HTTP route the server exposes onto the handlers that implement them.
 package router
 
 import (
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/handler"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/middleware"
 	"github.com/gin-gonic/gin"
-	"tbs-sdk-go-v2.0.x-server/internal/handler"
-	"tbs-sdk-go-v2.0.x-server/internal/middleware"
 )
 
+// New builds the Gin engine for the server, registering CORS/logging/
+// recovery middleware and every /auth, /business, /recipient,
+// /form1099utility, /form1099nec, and /form1099misc route onto the given
+// handlers.
 func New(
 	authHandler handler.AuthHandler,
 	businessHandler handler.BusinessHandler,

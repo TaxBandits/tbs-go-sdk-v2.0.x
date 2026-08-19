@@ -1,4 +1,5 @@
-package service
+// Package pdfretriever fetches PDF files directly from S3 using SSE-C.
+package pdfretriever
 
 import (
 	"context"
@@ -8,49 +9,49 @@ import (
 	"path"
 	"strings"
 
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"tbs-sdk-go-v2.0.x-server/internal/config"
 )
 
-// DraftPdfFile is the result of fetching a draft PDF (or other file) directly
-// from S3 using SSE-C, mirroring the .NET Utility.GetForm1099UtilityDraftPdfS3ByFileName
-// + Form1099UtilityController.DraftPdfFile logic.
-type DraftPdfFile struct {
+// File is the result of fetching a PDF file directly from S3 using SSE-C.
+type File struct {
 	Bytes       []byte
 	ContentType string
 	FileName    string
 }
 
-type DraftPdfService interface {
-	Fetch(ctx context.Context, draftPdfUrl string) (*DraftPdfFile, error)
+// Retriever fetches PDF files from S3 using SSE-C.
+type Retriever interface {
+	Fetch(ctx context.Context, pdfURL string) (*File, error)
 }
 
-type draftPdfService struct {
+type pdfRetriever struct {
 	cfg    config.S3Config
 	client *s3.Client
 }
 
-func NewDraftPdfService(cfg config.S3Config) DraftPdfService {
+// New builds a Retriever using the S3 credentials and bucket described by cfg.
+func New(cfg config.S3Config) Retriever {
 	awsCfg, _ := awsconfig.LoadDefaultConfig(context.Background(),
 		awsconfig.WithRegion(cfg.Region),
 		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(cfg.AccessKey, cfg.SecretKey, "")),
 	)
 
-	return &draftPdfService{
+	return &pdfRetriever{
 		cfg:    cfg,
 		client: s3.NewFromConfig(awsCfg),
 	}
 }
 
-func (s *draftPdfService) Fetch(ctx context.Context, draftPdfUrl string) (*DraftPdfFile, error) {
-	if strings.TrimSpace(draftPdfUrl) == "" {
-		return nil, fmt.Errorf("draftPdfUrl is required")
+func (s *pdfRetriever) Fetch(ctx context.Context, pdfURL string) (*File, error) {
+	if strings.TrimSpace(pdfURL) == "" {
+		return nil, fmt.Errorf("pdf URL is required")
 	}
 
-	key := draftPdfUrl
-	if parsed, err := url.Parse(draftPdfUrl); err == nil && parsed.IsAbs() {
+	key := pdfURL
+	if parsed, err := url.Parse(pdfURL); err == nil && parsed.IsAbs() {
 		key = strings.TrimPrefix(parsed.Path, "/")
 	}
 
@@ -81,14 +82,14 @@ func (s *draftPdfService) Fetch(ctx context.Context, draftPdfUrl string) (*Draft
 	}
 
 	fileExtension := ""
-	if idx := strings.LastIndex(draftPdfUrl, "."); idx != -1 {
-		fileExtension = strings.ToLower(draftPdfUrl[idx+1:])
+	if idx := strings.LastIndex(pdfURL, "."); idx != -1 {
+		fileExtension = strings.ToLower(pdfURL[idx+1:])
 	}
 
-	return &DraftPdfFile{
+	return &File{
 		Bytes:       data,
 		ContentType: contentTypeByExtension(fileExtension),
-		FileName:    path.Base(draftPdfUrl),
+		FileName:    path.Base(pdfURL),
 	}, nil
 }
 

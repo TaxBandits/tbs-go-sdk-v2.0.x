@@ -10,6 +10,96 @@ The **TaxBandits Server** is a Go + [Gin](https://github.com/gin-gonic/gin) midd
 
 ---
 
+## Use it as a Go module
+
+The packages under `pkg/` are importable, so services, shared HTTP transport, DTOs, and AWS S3
+PDF retrieval can be used directly without running this server. `internal/` holds only the
+Gin application wiring (handlers, router, and middleware).
+
+Run `go get` from a consuming Go module. If starting a new application, create its module first
+with `go mod init example.com/my-app`; do not run `go get` from this repository root.
+
+```bash
+go get github.com/TaxBandits/tbs-go-sdk-v2.0.x/server
+```
+
+After a `server/v*` release tag has been pushed, use the current release in a consuming Go module:
+
+```bash
+go get github.com/TaxBandits/tbs-go-sdk-v2.0.x/server@latest
+```
+
+To see published tags or select a fixed version:
+
+```bash
+go list -m -versions github.com/TaxBandits/tbs-go-sdk-v2.0.x/server
+go get github.com/TaxBandits/tbs-go-sdk-v2.0.x/server@v0.1.3
+```
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
+)
+
+func main() {
+	httpClient := &http.Client{Timeout: 30 * time.Second}
+
+	// One AuthService is shared by every other service: it signs the JWS, exchanges it for a JWT,
+	// and caches the token for 50 minutes. Passing nil for the client is fine — it defaults.
+	auth := service.NewAuthService(httpClient, config.OAuthConfig{
+		ClientID:     "YOUR_CLIENT_ID",
+		ClientSecret: "YOUR_CLIENT_SECRET",
+		UserToken:    "YOUR_USER_TOKEN",
+		URL:          "https://testoauth.expressauth.net/v2",
+		TokenPath:    "/token",
+		DefaultScope: "Read_Write",
+		DefaultForms: []string{"All"},
+	})
+
+	api := config.APIConfig{URL: "https://testapi.taxbandits.com/v2.0.0"}
+	misc := service.NewForm1099MiscService(auth, httpClient, api)
+
+	// Validate before creating: validateform accepts the same body as create and returns the
+	// provider's findings without creating a submission.
+	result, err := misc.ValidateForm(context.Background(), dtos.Form1099MiscCreateRequest{
+		// SubmissionManifest, ReturnHeader and ReturnData go here.
+	})
+	if err != nil {
+		log.Fatal(err) // transport failure, or a 405/5xx, which arrives as *dtos.CriticalAPIError
+	}
+
+	// A 400 is not an error here — it carries the per-record validation findings.
+	fmt.Println(result.StatusCode, result.Payload)
+}
+```
+
+### What you get back
+
+Every service method returns `*dtos.ProxyResult`:
+
+```go
+type ProxyResult struct {
+	StatusCode int // the upstream status, verbatim
+	Payload    any // the decoded upstream JSON body
+}
+```
+
+`200`, `3xx`, `400` and `404` are returned as a `ProxyResult` — a `400` carries the per-record
+errors, so it is a result and not a failure. `405` and `5xx` are returned as `*dtos.CriticalAPIError`.
+A `401` is retried once with a freshly minted token before either applies.
+
+---
+
 ## Getting Started
 
 ### Prerequisites
@@ -38,7 +128,7 @@ Create a `server/.env` file (no template is checked into the repo) with your Tax
 ### 3. Run in development
 
 ```bash
-go run .
+go run ./cmd/tbs-server
 ```
 
 The server starts on `http://localhost:$SERVER_PORT` with CORS enabled for all origins. Since there's no hot-reload built in, use a tool like [air](https://github.com/air-verse/air) if you want auto-restart on file changes.
@@ -46,7 +136,7 @@ The server starts on `http://localhost:$SERVER_PORT` with CORS enabled for all o
 ### 4. Build & run in production
 
 ```bash
-go build -o tbs-server .
+go build -o tbs-server ./cmd/tbs-server
 ./tbs-server
 ```
 
@@ -56,7 +146,7 @@ For production deployments, put the binary behind a reverse proxy (Nginx, Caddy,
 
 ## Environment Variables
 
-All variables are loaded from `server/.env` via `godotenv` at startup (see [internal/config/config.go](./internal/config/config.go)).
+All variables are loaded from `server/.env` via `godotenv` at startup (see [internal/config/config.go](./pkg/config/config.go)).
 
 | Variable                      | Required | Example                                 | Description                                                            |
 | ----------------------------- | -------- | --------------------------------------- | ---------------------------------------------------------------------- |
@@ -97,7 +187,7 @@ All routes are registered in [internal/router/router.go](./internal/router/route
 
 ### 🏢 Business (Payer) — `/business/*`
 
-Handler: [business_handler.go](./internal/handler/business_handler.go) · Service: [business_service.go](./internal/service/business_service.go)
+Handler: [business_handler.go](./internal/handler/business_handler.go) · Service: [business_service.go](./pkg/service/business_service.go)
 
 | Method | Route                  | Description                                                                                       |
 | ------ | ---------------------- | ------------------------------------------------------------------------------------------------- |
@@ -119,7 +209,7 @@ Handler: [business_handler.go](./internal/handler/business_handler.go) · Servic
 
 ### 👥 Recipient — `/recipient/*`
 
-Handler: [recipient_handler.go](./internal/handler/recipient_handler.go) · Service: [recipient_service.go](./internal/service/recipient_service.go)
+Handler: [recipient_handler.go](./internal/handler/recipient_handler.go) · Service: [recipient_service.go](./pkg/service/recipient_service.go)
 
 | Method | Route                           | Description                                                                                           |
 | ------ | ------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -141,7 +231,7 @@ Handler: [recipient_handler.go](./internal/handler/recipient_handler.go) · Serv
 
 ### 📄 Form 1099-NEC — `/form1099nec/*`
 
-Handler: [form1099nec_handler.go](./internal/handler/form1099nec_handler.go) · Service: [form1099nec_service.go](./internal/service/form1099nec_service.go)
+Handler: [form1099nec_handler.go](./internal/handler/form1099nec_handler.go) · Service: [form1099nec_service.go](./pkg/service/form1099nec_service.go)
 
 | Method | Route                       | Description                                                    |
 | ------ | --------------------------- | -------------------------------------------------------------- |
@@ -154,7 +244,7 @@ Handler: [form1099nec_handler.go](./internal/handler/form1099nec_handler.go) · 
 
 ### 🧾 Form 1099-MISC — `/form1099misc/*`
 
-Handler: [form1099misc_handler.go](./internal/handler/form1099misc_handler.go) · Service: [form1099misc_service.go](./internal/service/form1099misc_service.go)
+Handler: [form1099misc_handler.go](./internal/handler/form1099misc_handler.go) · Service: [form1099misc_service.go](./pkg/service/form1099misc_service.go)
 
 | Method | Route                        | Description                                                            |
 | ------ | ---------------------------- | ---------------------------------------------------------------------- |
@@ -167,7 +257,7 @@ Handler: [form1099misc_handler.go](./internal/handler/form1099misc_handler.go) �
 
 ### 🛠️ Form Utilities — `/form1099utility/*`
 
-Handler: [form1099utility_handler.go](./internal/handler/form1099utility_handler.go) · Service: [form1099utility_service.go](./internal/service/form1099utility_service.go)
+Handler: [form1099utility_handler.go](./internal/handler/form1099utility_handler.go) · Service: [form1099utility_service.go](./pkg/service/form1099utility_service.go)
 
 **Note**: Despite the route prefix, these utilities work for **both 1099 forms and W-2 forms**.
 
@@ -190,28 +280,34 @@ Handler: [form1099utility_handler.go](./internal/handler/form1099utility_handler
 
 ```
 server/
-├── main.go                         # Entrypoint: wires config → services → handlers → router
-├── internal/
+├── cmd/
+│   └── tbs-server/
+│       └── main.go                  # Entrypoint: wires config → services → handlers → router
+├── pkg/                             # Importable: the SDK surface
 │   ├── config/
 │   │   └── config.go                # godotenv loader → typed Config struct
 │   ├── dtos/                        # Request/response/query models
 │   │   ├── auth.go
 │   │   ├── business.go
-│   │   ├── common.go                 # ProxyResult, UpstreamResponse, error types
+│   │   ├── result.go                 # ProxyResult and UpstreamResponse
+│   │   ├── errors.go                 # SDK error types
 │   │   ├── form1099_shared.go
 │   │   ├── form1099misc.go
 │   │   ├── form1099nec.go
 │   │   ├── form1099utility.go
 │   │   └── recipient.go
+│   ├── helper/
+│   │   ├── http/                    # Shared proxy/retry-on-401 helper
+│   │   └── pdfretriever/            # AWS S3 GetObject with SSE-C (AES256)
 │   ├── service/                     # Business logic + upstream HTTP calls
 │   │   ├── auth_service.go           # JWS signing → JWT fetching + 50-min cache
 │   │   ├── business_service.go
 │   │   ├── recipient_service.go
 │   │   ├── form1099nec_service.go
 │   │   ├── form1099misc_service.go
-│   │   ├── form1099utility_service.go
-│   │   ├── draft_pdf_service.go      # AWS S3 GetObject with SSE-C (AES256)
-│   │   └── http_helpers.go           # Shared proxy/retry-on-401 helper
+│   │   └── form1099utility_service.go
+│   └── utils/                       # Endpoint paths, mapping, query helpers
+├── internal/                        # Not importable: this server's own wiring
 │   ├── handler/                     # Per-route Gin handlers (thin layer)
 │   │   ├── auth_handler.go
 │   │   ├── business_handler.go
@@ -225,11 +321,10 @@ server/
 │   │   └── recovery.go
 │   ├── router/
 │   │   └── router.go                 # Gin route registration
-│   └── utils/
-│       ├── constants.go              # Upstream TaxBandits endpoint paths
-│       ├── mapper.go                 # DTO → upstream JSON payload shaping
-│       ├── query.go                  # Case-insensitive query param helpers
-│       └── response.go               # WriteProxyResponse / WriteInternalError
+├── tests/                           # External/public SDK API tests
+│   ├── auth_api_test.go
+│   ├── service_api_test.go
+│   └── public_packages_test.go
 ├── go.mod
 ├── go.sum
 └── .env                              # Your local secrets (gitignored)
@@ -248,7 +343,7 @@ server/
       │ 1. Binds/validates input (ShouldBindJSON or query params)
       │ 2. Calls the matching service
       ▼
- Service (internal/service/*_service.go)
+ Service (pkg/service/*_service.go)
       │ 1. Gets JWT from auth_service (cache hit → skip)
       │ 2. Adds Authorization header
       │ 3. Hits TaxBandits API via net/http
@@ -260,14 +355,14 @@ server/
  Handler writes JSON back to client via utils.WriteProxyResponse
 ```
 
-### OAuth Flow (see [auth_service.go](./internal/service/auth_service.go))
+### OAuth Flow (see [auth_service.go](./pkg/service/auth_service.go))
 
 1. **JWS Signing** — Builds a JWT payload with `iss`/`sub` (Client ID), `aud` (User Token), `iat`, `scope` (default: `FullAccess`), `categories` (default: `["All"]`), then signs with `HS256` using the Client Secret.
 2. **Token Exchange** — Calls `GET {OAUTH_URL}{OAUTH_TOKEN_PATH}` with an `Authentication: <jws>` header → receives `AccessToken`.
 3. **Caching** — Tokens are stored in-process, keyed by `scope::forms`, with a 50-minute TTL (slightly under TaxBandits' 60-min expiry for safety).
-4. **Auto-Refresh** — The shared proxy helper (`callAPIWithRetry` / per-service `callAPI`) catches HTTP 401 from TaxBandits → calls `GetJWT(ctx, "", nil, true)` to force a `FullAccess`/`All` token refresh and retries the original request once.
+4. **Auto-Refresh** — The shared `pkg/helper/http.CallWithRetry` helper catches HTTP 401 from TaxBandits → calls `GetJWT(ctx, "", nil, true)` to force a `FullAccess`/`All` token refresh and retries the original request once.
 
-### Draft PDF Proxy (see [draft_pdf_service.go](./internal/service/draft_pdf_service.go))
+### Draft PDF Proxy (uses [pdf_retriever.go](./pkg/helper/pdfretriever/pdf_retriever.go))
 
 The `/form1099utility/draftpdffile` endpoint avoids exposing S3 credentials or SSE-C keys to the browser:
 
@@ -278,6 +373,9 @@ The `/form1099utility/draftpdffile` endpoint avoids exposing S3 credentials or S
    - `SSECustomerAlgorithm: "AES256"`
    - `SSECustomerKey: <base64 from BASE_64_KEY>` (passed through as-is, not decoded)
 5. Server streams the decrypted bytes back with a `Content-Type` derived from the file extension
+
+The reusable `pdfretriever.New(cfg).Fetch(ctx, pdfURL)` helper is not limited to draft PDFs; it can
+retrieve any S3 PDF that uses the configured SSE-C credentials.
 
 ---
 
@@ -291,11 +389,17 @@ The `/form1099utility/draftpdffile` endpoint avoids exposing S3 credentials or S
 
 ## Commands
 
-| Command                                    | Use Case                                    |
-| ------------------------------------------ | ------------------------------------------- |
-| `go run .`                                 | Development — compiles and runs in one step |
-| `go build -o tbs-server . && ./tbs-server` | Production — build once, run the binary     |
-| `go vet ./...`                             | Static analysis / catch compile-time issues |
+| Command                                                   | Use Case                                    |
+| ---------------------------------------------------------- | ------------------------------------------- |
+| `go run ./cmd/tbs-server`                                 | Development — compiles and runs in one step |
+| `go build -o tbs-server ./cmd/tbs-server && ./tbs-server` | Production — build once, run the binary     |
+| `go vet ./...`                                            | Static analysis / catch compile-time issues |
+| `gofmt -l .`                                               | List any files that aren't gofmt-formatted  |
+| `go test ./...`                                           | Run the test suite                          |
+
+CI (`.github/workflows/server-ci.yml`) runs the gofmt/vet/test checks above on every push or pull request touching `server/**`.
+
+The test package imports only public `pkg/...` paths. It covers service request construction, OAuth caching and forced refresh, HTTP response classification/retry, PDF-retriever input validation, and public DTO result/error behavior.
 
 ---
 
@@ -313,7 +417,7 @@ The `/form1099utility/draftpdffile` endpoint avoids exposing S3 credentials or S
 
 ### Request Timeout
 
-- The shared `http.Client` used by all services has a 30-second timeout (see [main.go](./main.go))
+- The shared `http.Client` used by all services has a 30-second timeout (see [cmd/tbs-server/main.go](./cmd/tbs-server/main.go)); a nil client passed to any `New*Service` constructor also defaults to this same 30-second timeout
 - For production, consider increasing this behind a load balancer
 
 ### CORS Errors in Browser
@@ -323,7 +427,7 @@ The `/form1099utility/draftpdffile` endpoint avoids exposing S3 credentials or S
 
 ### "no required module provides package ..." on build
 
-- This means an `internal/*` file still imports the old module path. Every file must import from the module declared in `go.mod` (`tbs-sdk-go-v2.0.x-server`), e.g. `tbs-sdk-go-v2.0.x-server/internal/dtos`. Run `go build ./...` to catch any stragglers.
+- A file is importing a path other than the one declared in `go.mod` (`github.com/TaxBandits/tbs-go-sdk-v2.0.x/server`), e.g. `.../server/pkg/dtos`. Run `go build ./...` to catch any stragglers.
 
 ---
 
@@ -342,7 +446,7 @@ The `/form1099utility/draftpdffile` endpoint avoids exposing S3 credentials or S
 ## Next Steps
 
 1. Create `.env` with your TaxBandits credentials
-2. Start server: `go run .`
+2. Start server: `go run ./cmd/tbs-server`
 3. Verify with a quick sanity test:
    ```bash
    curl -X POST http://localhost:$SERVER_PORT/auth/gettoken \
