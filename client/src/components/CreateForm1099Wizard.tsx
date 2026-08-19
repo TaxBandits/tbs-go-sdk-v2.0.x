@@ -27,7 +27,7 @@ const FORM_TYPES = [
 const DISTRIBUTION_TYPES = [
   { value: "POSTAL_AND_ONLINE", label: "POSTAL_AND_ONLINE" },
   { value: "POSTAL_ONLY", label: "POSTAL_ONLY" },
-  { value: "ONLINE_ONLY", label: "ONLINE_ONLY" },
+  { value: "ONLINE_ACCESS", label: "ONLINE_ACCESS" },
 ];
 
 const POSTAL_SERVICE_TYPES = [

@@ -275,7 +275,7 @@ function buildNecRequestBody(
           IsState: manifest.IsStateFiling && hasState,
           IsPostal:
             manifest.IsDistributionRequired &&
-            manifest.DistributionType !== "ONLINE_ONLY",
+            manifest.DistributionType !== "ONLINE_ACCESS",
           IsDistribution: manifest.IsDistributionRequired,
           IsForced: manifest.IsForcedTransmission,
           DistributionDetails: manifest.IsDistributionRequired
@@ -349,7 +349,7 @@ function buildMiscRequestBody(
           IsState: manifest.IsStateFiling && hasState,
           IsPostal:
             manifest.IsDistributionRequired &&
-            manifest.DistributionType !== "ONLINE_ONLY",
+            manifest.DistributionType !== "ONLINE_ACCESS",
           IsDistribution: manifest.IsDistributionRequired,
           IsForced: manifest.IsForcedTransmission,
           DistributionDetails: manifest.IsDistributionRequired
