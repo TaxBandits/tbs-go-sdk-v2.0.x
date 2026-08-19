@@ -4,12 +4,17 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/helper/pdfretriever"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"tbs-sdk-go-v2.0.x-server/internal/dtos"
-	"tbs-sdk-go-v2.0.x-server/internal/service"
-	"tbs-sdk-go-v2.0.x-server/internal/utils"
 )
 
+// Form1099UtilityHandler handles cross-form routes under
+// /form1099utility: listing, status, draft/post-transmission PDF URLs,
+// deletion, transmission, and status history — shared by 1099 and W-2
+// forms alike.
 type Form1099UtilityHandler interface {
 	List(c *gin.Context)
 	Status(c *gin.Context)
@@ -22,28 +27,30 @@ type Form1099UtilityHandler interface {
 }
 
 type form1099UtilityHandler struct {
-	service         service.Form1099UtilityService
-	draftPdfService service.DraftPdfService
+	service      service.Form1099UtilityService
+	pdfRetriever pdfretriever.Retriever
 }
 
-func NewForm1099UtilityHandler(service service.Form1099UtilityService, draftPdfService service.DraftPdfService) Form1099UtilityHandler {
-	return &form1099UtilityHandler{service: service, draftPdfService: draftPdfService}
+// NewForm1099UtilityHandler builds a Form1099UtilityHandler backed by the
+// given Form1099UtilityService and pdfretriever.Retriever.
+func NewForm1099UtilityHandler(service service.Form1099UtilityService, pdfRetriever pdfretriever.Retriever) Form1099UtilityHandler {
+	return &form1099UtilityHandler{service: service, pdfRetriever: pdfRetriever}
 }
 
 func (h *form1099UtilityHandler) List(c *gin.Context) {
 	var request dtos.List1099UtilityRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.List(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) Status(c *gin.Context) {
@@ -55,11 +62,11 @@ func (h *form1099UtilityHandler) Status(c *gin.Context) {
 
 	response, err := h.service.Status(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) RequestDraftPdfUrl(c *gin.Context) {
@@ -70,11 +77,11 @@ func (h *form1099UtilityHandler) RequestDraftPdfUrl(c *gin.Context) {
 
 	response, err := h.service.RequestDraftPdfUrl(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) DraftPdfFile(c *gin.Context) {
@@ -85,7 +92,7 @@ func (h *form1099UtilityHandler) DraftPdfFile(c *gin.Context) {
 		return
 	}
 
-	file, err := h.draftPdfService.Fetch(c.Request.Context(), draftPdfUrl)
+	file, err := h.pdfRetriever.Fetch(c.Request.Context(), draftPdfUrl)
 	if err != nil {
 		log.Printf("draft pdf fetch failed for %q: %v", draftPdfUrl, err)
 		c.Status(http.StatusNotFound)
@@ -109,11 +116,11 @@ func (h *form1099UtilityHandler) RequestPdfUrls(c *gin.Context) {
 
 	response, err := h.service.RequestPdfUrls(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) Delete(c *gin.Context) {
@@ -125,27 +132,27 @@ func (h *form1099UtilityHandler) Delete(c *gin.Context) {
 
 	response, err := h.service.Delete(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) Transmit(c *gin.Context) {
 	var request dtos.TransmitRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.WriteValidationError(c, "invalid request body")
+		WriteValidationError(c, "invalid request body")
 		return
 	}
 
 	response, err := h.service.Transmit(c.Request.Context(), request)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }
 
 func (h *form1099UtilityHandler) StatusLog(c *gin.Context) {
@@ -156,9 +163,9 @@ func (h *form1099UtilityHandler) StatusLog(c *gin.Context) {
 
 	response, err := h.service.StatusLog(c.Request.Context(), query)
 	if err != nil {
-		utils.WriteInternalError(c, err)
+		WriteInternalError(c, err)
 		return
 	}
 
-	utils.WriteProxyResponse(c, response)
+	WriteProxyResponse(c, response)
 }

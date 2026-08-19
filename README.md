@@ -7,8 +7,124 @@ This SDK provides:
 - **Go Backend Server** — Gin-based API wrapper that handles OAuth 2.0 authentication, request routing, and AWS S3 draft PDF proxying
 - **React Frontend Client** — TypeScript + Vite dashboard with pre-built components for Business, Recipient, and Form management
 - **Pre-built Modules** — Business (Payer), Recipient, Form 1099-NEC, Form 1099-MISC, and cross-form utility endpoints
+- **Importable Go packages** — `server/pkg/` can be used as a dependency on its own, without running the sample server ([below](#use-it-as-a-go-module))
 
 > 🔗 **Full API Reference**: [TaxBandits Developer Docs 2.0.0](https://developer.taxbandits.com/docs/2.0.0/Business/Overview)
+
+---
+
+## Use it as a Go module
+
+The packages under `server/pkg/` are importable, so you can call the TaxBandits API from your own Go
+code without running the sample server. Gin stays under `internal/`; reusable AWS PDF retrieval
+is available independently in `server/pkg/helper/pdfretriever`.
+
+Run `go get` from the directory of a consuming Go module, not from this repository root. For a new
+application, first run `go mod init example.com/my-app`.
+
+```bash
+go get github.com/TaxBandits/tbs-go-sdk-v2.0.x/server
+```
+
+```go
+import (
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
+)
+
+auth := service.NewAuthService(httpClient, config.OAuthConfig{
+	URL:          "https://testoauth.expressauth.net/v2",
+	TokenPath:    "/token",
+	ClientID:     clientID,
+	ClientSecret: clientSecret,
+	UserToken:    userToken,
+	DefaultScope: "Read_Write",
+	DefaultForms: []string{"All"},
+})
+
+misc := service.NewForm1099MiscService(auth, httpClient, config.APIConfig{
+	URL: "https://testapi.taxbandits.com/v2.0.0",
+})
+
+result, err := misc.ValidateForm(ctx, dtos.Form1099MiscCreateRequest{})
+```
+
+One `AuthService` is shared across the form services — it signs the JWS, exchanges it for a JWT and
+caches the token. See [server/README.md](./server/README.md#use-it-as-a-go-module) for the full
+example and for which upstream statuses come back as a result rather than an error.
+
+### Install the latest release
+
+The module lives in `server/`, so its release tags must carry the `server/` prefix. After a release
+tag has been pushed, install the newest release with:
+
+```bash
+go get github.com/TaxBandits/tbs-go-sdk-v2.0.x/server@latest
+```
+
+List the published versions or pin a specific release with:
+
+```bash
+go list -m -versions github.com/TaxBandits/tbs-go-sdk-v2.0.x/server
+go get github.com/TaxBandits/tbs-go-sdk-v2.0.x/server@v0.1.3
+```
+
+At the time of writing, no `server/v*` tag has been pushed to the TaxBandits remote, so `@latest`
+resolves to a pseudo-version until a release is published. Create and push a release tag from the
+selected release commit:
+
+```bash
+git tag server/v0.1.3
+git push upstream server/v0.1.3
+```
+
+The repository name contains an API version; keep Go module release tags below v2 unless the module
+path is intentionally migrated to a `/v2` suffix.
+
+### Retrieve a PDF from S3
+
+`pkg/helper/pdfretriever` is reusable for any SSE-C encrypted PDF URL, including a draft-PDF URL
+returned by the TaxBandits API:
+
+```go
+retriever := pdfretriever.New(config.S3Config{
+	AccessKey:  os.Getenv("AWS_ACCESS_KEY"),
+	SecretKey:  os.Getenv("AWS_SECRET_KEY"),
+	BucketName: os.Getenv("BUCKET_NAME"),
+	Base64Key:  os.Getenv("BASE_64_KEY"),
+	Region:     "us-east-1",
+})
+
+file, err := retriever.Fetch(ctx, pdfURL)
+// file.Bytes, file.ContentType, and file.FileName
+```
+
+Import `pdfretriever` and `os` alongside the imports in the preceding example.
+
+### Publish changes
+
+This checkout uses the `upstream` remote and its current branch is `work`. Stage the intended files explicitly; this avoids including unrelated working-tree deletions.
+
+```bash
+git add README.md client/README.md server/README.md \
+  server/go.mod \
+  server/cmd/tbs-server/main.go \
+  server/internal/handler/*.go \
+  server/internal/router/router.go \
+  server/pkg/dtos/*.go server/pkg/helper server/pkg/service/*.go server/pkg/utils/*.go \
+  server/tests
+git diff --cached --check
+git commit -m "refactor(server): expose reusable SDK helpers"
+git push -u upstream work
+```
+
+After the branch has been merged or otherwise selected for release, create the server-module tag from that commit:
+
+```bash
+git tag server/v0.1.3
+git push upstream server/v0.1.3
+```
 
 ---
 
@@ -24,17 +140,22 @@ tbs-go-sdk-2.0.x/
 │   │   └── types/index.ts       # TypeScript interfaces
 │   ├── .env.example             # Client env template
 │   └── package.json
-├── server/                      # Go + Gin backend
-│   ├── internal/
+├── server/                      # Go + Gin backend (Go module: github.com/TaxBandits/tbs-go-sdk-v2.0.x/server)
+│   ├── pkg/                     # Importable: use these as a dependency
 │   │   ├── config/              # Env-driven configuration loader
+│   │   ├── helper/              # Reusable HTTP and PDF-retrieval helpers
 │   │   ├── dtos/                # Request/response/query models
+│   │   └── service/             # OAuth + the TaxBandits API calls
+│   ├── internal/                # The sample server's own wiring
 │   │   ├── handler/             # Gin request handlers
 │   │   ├── middleware/          # CORS, logging, panic recovery
 │   │   ├── router/              # Route registration
-│   │   └── service/             # OAuth, proxy, and S3 business logic
-│   ├── main.go                  # Entrypoint: wires config → services → router
+│   ├── tests/                   # Public-package tests
+│   ├── cmd/tbs-server/
+│   │   └── main.go               # Entrypoint: wires config → services → router
 │   ├── .env                     # Your local secrets (gitignored)
 │   └── go.mod
+├── .github/workflows/server-ci.yml  # gofmt/vet/test on every push or PR touching server/**
 ├── README.md                    # This file
 ```
 
@@ -176,7 +297,7 @@ cp client/.env.example client/.env
 ```bash
 # Terminal 1 — Backend server (port from SERVER_PORT, e.g. 8080)
 cd server
-go run .
+go run ./cmd/tbs-server
 
 # Terminal 2 — Frontend client (port 3000)
 cd client

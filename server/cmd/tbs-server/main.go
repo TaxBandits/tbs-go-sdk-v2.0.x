@@ -9,10 +9,11 @@ import (
 	"syscall"
 	"time"
 
-	"tbs-sdk-go-v2.0.x-server/internal/config"
-	"tbs-sdk-go-v2.0.x-server/internal/handler"
-	"tbs-sdk-go-v2.0.x-server/internal/router"
-	"tbs-sdk-go-v2.0.x-server/internal/service"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/handler"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/internal/router"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/helper/pdfretriever"
+	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
 )
 
 func main() {
@@ -26,12 +27,12 @@ func main() {
 	form1099UtilityService := service.NewForm1099UtilityService(authService, httpClient, cfg.PublicAPI)
 	form1099NecService := service.NewForm1099NecService(authService, httpClient, cfg.PublicAPI)
 	form1099MiscService := service.NewForm1099MiscService(authService, httpClient, cfg.PublicAPI)
-	draftPdfService := service.NewDraftPdfService(cfg.S3)
+	pdfRetriever := pdfretriever.New(cfg.S3)
 
 	authHandler := handler.NewAuthHandler(authService)
 	businessHandler := handler.NewBusinessHandler(businessService)
 	recipientHandler := handler.NewRecipientHandler(recipientService)
-	form1099UtilityHandler := handler.NewForm1099UtilityHandler(form1099UtilityService, draftPdfService)
+	form1099UtilityHandler := handler.NewForm1099UtilityHandler(form1099UtilityService, pdfRetriever)
 	form1099NecHandler := handler.NewForm1099NecHandler(form1099NecService)
 	form1099MiscHandler := handler.NewForm1099MiscHandler(form1099MiscService)
 	engine := router.New(authHandler, businessHandler, recipientHandler, form1099UtilityHandler, form1099NecHandler, form1099MiscHandler)
