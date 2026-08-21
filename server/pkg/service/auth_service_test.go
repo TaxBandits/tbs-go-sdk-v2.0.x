@@ -1,4 +1,4 @@
-package tests
+package service
 
 import (
 	"context"
@@ -9,10 +9,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
 	model "github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
-	. "github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 func testOAuthConfig(serverURL string) config.OAuthConfig {

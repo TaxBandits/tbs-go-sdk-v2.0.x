@@ -146,9 +146,9 @@ type TransmitStateStatus struct {
 
 // TransmitDistribution holds the postal and online-access distribution status for a transmitted record.
 type TransmitDistribution struct {
-	DistributionType   *string         `json:"DistributionType"`
-	PostalStatus       *TransmitStatus `json:"PostalStatus"`
-	OnlineAccessStatus *TransmitStatus `json:"OnlineAccessStatus"`
+	DistributionType   *DistributionType `json:"DistributionType"`
+	PostalStatus       *TransmitStatus   `json:"PostalStatus"`
+	OnlineAccessStatus *TransmitStatus   `json:"OnlineAccessStatus"`
 }
 
 // Delete1099UtilityResponse family
@@ -218,9 +218,9 @@ type OnlineAccessStatusLog struct {
 
 // PostalStatusLog holds a single postal distribution status entry with its postal type and timestamp.
 type PostalStatusLog struct {
-	PostalType *string `json:"PostalType"`
-	Code       *string `json:"Code"`
-	Status     *string `json:"Status"`
-	Message    *string `json:"Message"`
-	StatusTs   string  `json:"StatusTs"`
+	PostalType *PostalType `json:"PostalType"`
+	Code       *string     `json:"Code"`
+	Status     *string     `json:"Status"`
+	Message    *string     `json:"Message"`
+	StatusTs   string      `json:"StatusTs"`
 }
