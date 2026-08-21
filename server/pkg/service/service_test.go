@@ -1,4 +1,4 @@
-package tests
+package service
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/config"
 	"github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/dtos"
-	. "github.com/TaxBandits/tbs-go-sdk-v2.0.x/server/pkg/service"
 )
 
 // stubAuth stands in for the OAuth exchange. It records how many tokens were minted and whether the
@@ -159,6 +158,275 @@ func TestServicesPutTheRightRequestOnTheWire(t *testing.T) {
 			},
 			wantMethod: http.MethodPost,
 			wantPath:   "/form1099/transmit",
+		},
+		{
+			name: "utility list",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewForm1099UtilityService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					List(ctx, dtos.List1099UtilityRequest{})
+			},
+			wantMethod: http.MethodPost,
+			wantPath:   "/form1099/list",
+		},
+		{
+			name: "utility request draft pdf url",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewForm1099UtilityService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					RequestDraftPdfUrl(ctx, dtos.RequestDraftPdfUrlQuery{RecordId: "REC-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/form1099/requestdraftpdfurl",
+			wantQuery:  map[string]string{"RecordId": "REC-1"},
+		},
+		{
+			name: "utility request pdf urls",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewForm1099UtilityService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					RequestPdfUrls(ctx, dtos.RequestPdfUrlsQuery{SubmissionId: "S-1", RecordId: "REC-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/form1099/requestpdfurls",
+			wantQuery:  map[string]string{"SubmissionId": "S-1", "RecordId": "REC-1"},
+		},
+		{
+			name: "utility status log",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewForm1099UtilityService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					StatusLog(ctx, dtos.StatusLogQuery{RecordId: "REC-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/form1099/statuslog",
+			wantQuery:  map[string]string{"RecordId": "REC-1"},
+		},
+		{
+			name: "business list",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewBusinessService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					List(ctx, dtos.ListBusinessQuery{Page: 1, PageSize: 10})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/business/list",
+			wantQuery:  map[string]string{"Page": "1", "PageSize": "10"},
+		},
+		{
+			name: "business remove is DELETE",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewBusinessService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					Remove(ctx, dtos.DeleteBusinessQuery{BusinessIDs: "B-1"})
+			},
+			wantMethod: http.MethodDelete,
+			wantPath:   "/business/delete",
+			wantQuery:  map[string]string{"BusinessIds": "B-1"},
+		},
+		{
+			name: "business reactivate",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewBusinessService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					Reactivate(ctx, dtos.ActivationQuery{BusinessIDs: "B-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/business/reactivate",
+			wantQuery:  map[string]string{"BusinessIds": "B-1"},
+		},
+		{
+			name: "business deactivate",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewBusinessService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					Deactivate(ctx, dtos.ActivationQuery{BusinessIDs: "B-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/business/deactivate",
+			wantQuery:  map[string]string{"BusinessIds": "B-1"},
+		},
+		{
+			name: "business add dba",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewBusinessService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					AddDBA(ctx, dtos.AddDBARequest{})
+			},
+			wantMethod: http.MethodPost,
+			wantPath:   "/business/adddba",
+		},
+		{
+			name: "business update dba is PUT",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewBusinessService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					UpdateDBA(ctx, dtos.AddDBARequest{})
+			},
+			wantMethod: http.MethodPut,
+			wantPath:   "/business/updatedba",
+		},
+		{
+			name: "business list dba",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewBusinessService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					ListDBA(ctx, dtos.ListDBAQuery{BusinessID: "B-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/business/listdba",
+			wantQuery:  map[string]string{"BusinessId": "B-1"},
+		},
+		{
+			name: "business delete dba is DELETE",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewBusinessService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					DeleteDBA(ctx, dtos.DeleteDBAQuery{BusinessID: "B-1"})
+			},
+			wantMethod: http.MethodDelete,
+			wantPath:   "/business/deletedba",
+			wantQuery:  map[string]string{"BusinessId": "B-1"},
+		},
+		{
+			name: "recipient list",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					List(ctx, dtos.ListRecipientQuery{BusinessID: "B-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/recipient/list",
+			wantQuery:  map[string]string{"BusinessId": "B-1"},
+		},
+		{
+			name: "recipient create",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					Create(ctx, dtos.RecipientsRequest{})
+			},
+			wantMethod: http.MethodPost,
+			wantPath:   "/recipient/create",
+		},
+		{
+			name: "recipient update is PUT",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					Update(ctx, dtos.RecipientsRequest{})
+			},
+			wantMethod: http.MethodPut,
+			wantPath:   "/recipient/update",
+		},
+		{
+			name: "recipient remove is DELETE",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					Remove(ctx, dtos.DeleteRecipientQuery{RecipientID: "R-1"})
+			},
+			wantMethod: http.MethodDelete,
+			wantPath:   "/recipient/delete",
+			wantQuery:  map[string]string{"RecipientId": "R-1"},
+		},
+		{
+			name: "recipient reactivate",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					Reactivate(ctx, dtos.RecipientActivationQuery{RecipientIDs: "R-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/recipient/reactivate",
+			wantQuery:  map[string]string{"RecipientIds": "R-1"},
+		},
+		{
+			name: "recipient deactivate",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					Deactivate(ctx, dtos.RecipientActivationQuery{RecipientIDs: "R-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/recipient/deactivate",
+			wantQuery:  map[string]string{"RecipientIds": "R-1"},
+		},
+		{
+			name: "recipient assign",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					AssignRecipients(ctx, dtos.AssignRecipientsRequest{})
+			},
+			wantMethod: http.MethodPost,
+			wantPath:   "/recipient/assignrecipients",
+		},
+		{
+			name: "recipient unassign",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					UnassignRecipients(ctx, dtos.UnAssignRecipientsRequest{})
+			},
+			wantMethod: http.MethodPost,
+			wantPath:   "/recipient/unassignrecipients",
+		},
+		{
+			name: "recipient add dba",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					AddDBA(ctx, dtos.RecipientAddDBARequest{})
+			},
+			wantMethod: http.MethodPost,
+			wantPath:   "/recipient/adddba",
+		},
+		{
+			name: "recipient update dba is PUT",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					UpdateDBA(ctx, dtos.RecipientAddDBARequest{})
+			},
+			wantMethod: http.MethodPut,
+			wantPath:   "/recipient/updatedba",
+		},
+		{
+			name: "recipient list dba",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					ListDBA(ctx, dtos.ListRecipientDBAQuery{RecipientID: "R-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/recipient/listdba",
+			wantQuery:  map[string]string{"RecipientId": "R-1"},
+		},
+		{
+			name: "recipient delete dba is DELETE",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewRecipientService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					DeleteDBA(ctx, dtos.DeleteRecipientDBAQuery{RecipientID: "R-1"})
+			},
+			wantMethod: http.MethodDelete,
+			wantPath:   "/recipient/deletedba",
+			wantQuery:  map[string]string{"RecipientId": "R-1"},
+		},
+		{
+			name: "1099-MISC get",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewForm1099MiscService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					Get(ctx, dtos.GetForm1099MiscQuery{RecordIds: "REC-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/form1099misc/get",
+			wantQuery:  map[string]string{"RecordIds": "REC-1"},
+		},
+		{
+			name: "1099-MISC validateform",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewForm1099MiscService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					ValidateForm(ctx, dtos.Form1099MiscCreateRequest{})
+			},
+			wantMethod: http.MethodPost,
+			wantPath:   "/form1099misc/validateform",
+		},
+		{
+			name: "1099-NEC get",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewForm1099NecService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					Get(ctx, dtos.GetForm1099NecQuery{RecordIds: "REC-1"})
+			},
+			wantMethod: http.MethodGet,
+			wantPath:   "/form1099nec/get",
+			wantQuery:  map[string]string{"RecordIds": "REC-1"},
+		},
+		{
+			name: "1099-NEC update is PUT",
+			call: func(ctx context.Context, s *httptest.Server, a AuthService) (*dtos.ProxyResult, error) {
+				return NewForm1099NecService(a, s.Client(), config.APIConfig{URL: s.URL}).
+					Update(ctx, dtos.Form1099NecCreateRequest{})
+			},
+			wantMethod: http.MethodPut,
+			wantPath:   "/form1099nec/update",
 		},
 	}
 
@@ -404,5 +672,60 @@ func TestRequestBodyIsJSONEncoded(t *testing.T) {
 	}
 	if _, present := sent["Businesses"]; !present {
 		t.Errorf("body = %s, want a Businesses array", got.body)
+	}
+}
+
+// TestForm1099MiscGetRenamesMiscFormDataKey — the upstream API returns each record's box data
+// under "MiscFormData", but the frontend only reads "MISCFormData". Get() must rename the key
+// in place for every record without disturbing the rest of the payload.
+func TestForm1099MiscGetRenamesMiscFormDataKey(t *testing.T) {
+	srv, _ := newServer(t, func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{
+			"Form1099Records": [
+				{
+					"ReturnData": [
+						{"SequenceId": "1", "MiscFormData": {"Rents": 100}}
+					]
+				}
+			]
+		}`))
+	})
+
+	svc := NewForm1099MiscService(&stubAuth{token: "tok"}, srv.Client(), config.APIConfig{URL: srv.URL})
+	result, err := svc.Get(context.Background(), dtos.GetForm1099MiscQuery{RecordIds: "REC-1"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	records, ok := result.Payload.(map[string]any)["Form1099Records"].([]any)
+	if !ok || len(records) != 1 {
+		t.Fatalf("Payload = %#v, want one Form1099Records entry", result.Payload)
+	}
+	returnData, ok := records[0].(map[string]any)["ReturnData"].([]any)
+	if !ok || len(returnData) != 1 {
+		t.Fatalf("ReturnData = %#v, want one entry", records[0])
+	}
+	rd := returnData[0].(map[string]any)
+	if _, stillPresent := rd["MiscFormData"]; stillPresent {
+		t.Error("MiscFormData key should have been renamed, not left in place")
+	}
+	misc, ok := rd["MISCFormData"].(map[string]any)
+	if !ok || misc["Rents"] != float64(100) {
+		t.Errorf("MISCFormData = %#v, want the renamed box data", rd["MISCFormData"])
+	}
+}
+
+// TestForm1099MiscGetToleratesMissingFormData covers the early-return branches: a payload with
+// no Form1099Records, or records with no ReturnData, must pass through unchanged rather than panic.
+func TestForm1099MiscGetToleratesMissingFormData(t *testing.T) {
+	srv, _ := newServer(t, ok)
+
+	svc := NewForm1099MiscService(&stubAuth{token: "tok"}, srv.Client(), config.APIConfig{URL: srv.URL})
+	result, err := svc.Get(context.Background(), dtos.GetForm1099MiscQuery{RecordIds: "REC-1"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.StatusCode != http.StatusOK {
+		t.Errorf("StatusCode = %d, want 200", result.StatusCode)
 	}
 }

@@ -33,9 +33,25 @@ type ReturnManifest struct {
 
 // DistributionDetails specifies how a recipient copy should be distributed, such as postal mail or online access.
 type DistributionDetails struct {
-	DistributionType *string `json:"DistributionType"`
-	PostalType       *string `json:"PostalType"`
+	DistributionType *DistributionType `json:"DistributionType"`
+	PostalType       *PostalType       `json:"PostalType"`
 }
+
+// DistributionType identifies how a recipient copy is delivered, per API validation rule C00-000053.
+type DistributionType string
+
+const (
+	DistributionTypePostalOnly      DistributionType = "POSTAL_ONLY"
+	DistributionTypeOnlineAccess    DistributionType = "ONLINE_ACCESS"
+	DistributionTypePostalAndOnline DistributionType = "POSTAL_AND_ONLINE"
+)
+
+// PostalType identifies the mail class used for a postal distribution, per API validation rule C00-000056.
+type PostalType string
+
+const (
+	PostalTypeUSPSFirstClass PostalType = "USPS_FIRST_CLASS"
+)
 
 // FormValidateFormResponse is shared by the NEC and MISC validateform endpoints.
 
