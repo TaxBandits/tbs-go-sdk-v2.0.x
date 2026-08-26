@@ -32,7 +32,6 @@ const DISTRIBUTION_TYPES = [
 
 const POSTAL_SERVICE_TYPES = [
   { value: "USPS_FIRST_CLASS", label: "USPS First Class Mail" },
-  { value: "USPS_CERTIFIED", label: "USPS Certified Mail" },
 ];
 
 export interface StateFilingEntry {
